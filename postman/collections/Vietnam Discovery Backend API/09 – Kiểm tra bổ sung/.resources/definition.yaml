@@ -1,0 +1,4 @@
+$kind: "collection"
+name: "09 – Kiểm tra bổ sung"
+description: "TC21: 405. TC22: Swagger Development. TC23: diagnostic route tat mac dinh (skip neu enableErrorTests=true)."
+order: 9000

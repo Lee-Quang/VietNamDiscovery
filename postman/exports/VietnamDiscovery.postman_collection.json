@@ -1,0 +1,453 @@
+{
+  "info": {
+    "_postman_id": "085b9f84-f2a5-45e0-972f-ea2f0fdc0812",
+    "name": "Vietnam Discovery Backend API",
+    "description": "VDB-11/VDB-12 | 20 TC goc + TC21-TC23. Postman tu dong kiem tra HTTP; Git/secrets/build/README la checklist, khong co request gia. Xem postman/README.md. Default: Development HTTP :5026, diagnostic route tat. Bat server flag va enableErrorTests=true de chay TC08-TC11.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5026"
+    },
+    {
+      "key": "maxResponseTimeMs",
+      "value": "2000"
+    },
+    {
+      "key": "enableErrorTests",
+      "value": "false"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 – Health Check API",
+      "description": "VDB-11 | TC01-TC06, TC12. Chay request dau tien de xoa trang thai recovery cu.",
+      "item": [
+        {
+          "name": "01 – Health Check",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset('vdb12LastErrorBaseUrl');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC01 - HTTP 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('TC02 - Response la JSON object hop le', () => pm.expect(pm.response.json()).to.be.an('object'));",
+                  "pm.test('TC03 - Backend Healthy', () => pm.expect(pm.response.json().status).to.equal('Healthy'));",
+                  "pm.test('TC04 - Ten ung dung', () => pm.expect(pm.response.json().application).to.equal('Vietnam Discovery API'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/health",
+            "description": "TC01-TC04: HTTP 200, JSON object, status=Healthy, application=Vietnam Discovery API."
+          },
+          "response": []
+        },
+        {
+          "name": "05- Kiểm tra Timestamp",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC05 - Timestamp ISO 8601 co mui gio va parse duoc', () => {",
+                  "    const timestamp = pm.response.json().timestamp;",
+                  "    pm.expect(timestamp).to.be.a('string');",
+                  "    pm.expect(timestamp).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/);",
+                  "    pm.expect(Number.isFinite(Date.parse(timestamp))).to.equal(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/health",
+            "description": "TC05: timestamp ISO 8601 hop le, co timezone. Khong so sanh chinh xac voi dong ho may client."
+          },
+          "response": []
+        },
+        {
+          "name": "06 - Kiểm tra thời gian phản hồi",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC06 - Health thanh cong va phan hoi duoi nguong ms', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const limit = Number(pm.variables.get('maxResponseTimeMs'));",
+                  "    pm.expect(Number.isFinite(limit) && limit > 0, 'nguong hop le').to.equal(true);",
+                  "    pm.expect(pm.response.responseTime).to.be.below(limit);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/health",
+            "description": "TC06: mac dinh <2000ms, localhost sau khi server khoi dong. Day la smoke test, khong phai load test."
+          },
+          "response": []
+        },
+        {
+          "name": "12 - Kiểm tra Content-Type",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC12 - Content-Type application/json, chap nhan charset', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const contentType = pm.response.headers.get('Content-Type') || '';",
+                  "    pm.expect(contentType.split(';')[0].trim().toLowerCase()).to.equal('application/json');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/health",
+            "description": "TC12: chap nhan application/json; charset=utf-8."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 – Not Found Handling",
+      "description": "VDB-12 | TC07. Accept text/html van nhan ProblemDetails.",
+      "item": [
+        {
+          "name": "02 – Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC07 - Endpoint khong ton tai tra 404', () => pm.response.to.have.status(404));",
+                  "pm.test('TC07a - ProblemDetails hop le va co traceId', () => {",
+                  "",
+                  "const p = pm.response.json();",
+                  "pm.expect(pm.response.headers.get('Content-Type').split(';')[0].trim().toLowerCase()).to.equal('application/problem+json');",
+                  "['type', 'title', 'instance', 'traceId'].forEach(key => pm.expect(p[key], key).to.be.a('string').and.not.empty);",
+                  "pm.expect(p.status).to.equal(pm.response.code);",
+                  "",
+                  "    pm.expect(p.instance).to.equal('/api/v1/not-found');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/html"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/not-found",
+            "description": "TC07: HTTP 404, application/problem+json, status=404, instance dung route va traceId khong rong."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 – Exception Handling Middleware",
+      "description": "VDB-12 | TC08-TC10. Chi chay khi Development + Diagnostics:EnableTestEndpoints=true va enableErrorTests=true. Neu khong, request bi skip, khong duoc tinh la PASS.",
+      "item": [
+        {
+          "name": "03 – Exception Middleware",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset('vdb12LastErrorBaseUrl');",
+                  "",
+                  "if (String(pm.variables.get('enableErrorTests')).toLowerCase() !== 'true') {",
+                  "    console.warn('SKIPPED: bat Diagnostics:EnableTestEndpoints va enableErrorTests=true de chay TC08-TC11.');",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 500) {",
+                  "    pm.collectionVariables.set('vdb12LastErrorBaseUrl', pm.variables.get('baseUrl'));",
+                  "}",
+                  "pm.test('TC08 - Exception tra HTTP 500', () => pm.response.to.have.status(500));",
+                  "pm.test('TC09 - Response 500 dung ProblemDetails', () => {",
+                  "",
+                  "const p = pm.response.json();",
+                  "pm.expect(pm.response.headers.get('Content-Type').split(';')[0].trim().toLowerCase()).to.equal('application/problem+json');",
+                  "['type', 'title', 'instance', 'traceId'].forEach(key => pm.expect(p[key], key).to.be.a('string').and.not.empty);",
+                  "pm.expect(p.status).to.equal(pm.response.code);",
+                  "",
+                  "    pm.expect(p.status).to.equal(500);",
+                  "    pm.expect(p.instance).to.equal('/api/v1/test-error');",
+                  "    pm.expect(p.detail).to.equal('An unexpected error occurred. Contact support with the traceId.');",
+                  "});",
+                  "pm.test('TC10 - Khong lo exception hoac stack trace', () => {",
+                  "    pm.response.to.have.status(500);",
+                  "    const text = pm.response.text();",
+                  "    const p = pm.response.json();",
+                  "    ['POSTMAN_TEST_EXCEPTION', 'InvalidOperationException', 'System.InvalidOperationException',",
+                  "     'VietnamDiscovery.Api', 'Program.cs', ':line '].forEach(value => pm.expect(text).not.to.include(value));",
+                  "    ['exception', 'stackTrace', 'stacktrace', 'innerException'].forEach(key => pm.expect(p).not.to.have.property(key));",
+                  "    pm.expect(text).not.to.match(/[A-Za-z]:\\\\/);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/html"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/test-error",
+            "description": "TC08-TC10. Endpoint se nem exception co marker POSTMAN_TEST_EXCEPTION; response khong duoc lo marker nay."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 – Recovery & Stability",
+      "description": "VDB-12 | TC11. Chay ngay sau muc 03 tren cung server; khong restart backend giua hai request.",
+      "item": [
+        {
+          "name": "04 – Health After Error",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (String(pm.variables.get('enableErrorTests')).toLowerCase() !== 'true') {",
+                  "    console.warn('SKIPPED: bat Diagnostics:EnableTestEndpoints va enableErrorTests=true de chay TC08-TC11.');",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC11 - Health 200 Healthy sau exception tren cung baseUrl', () => {",
+                  "    pm.expect(pm.collectionVariables.get('vdb12LastErrorBaseUrl'), 'phai chay TC08 va nhan 500 truoc').to.equal(pm.variables.get('baseUrl'));",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().status).to.equal('Healthy');",
+                  "});",
+                  "pm.collectionVariables.unset('vdb12LastErrorBaseUrl');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/health",
+            "description": "TC11: request exception truoc do phai nhan 500; health tiep theo phai 200 va Healthy. Chay bang Runner de giu dung thu tu."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 – Git & Source Code Management",
+      "description": "TC13: git status hoat dong trong thu muc solution.\nTC14: git check-ignore xac nhan bin/, obj/, .env bi ignore; git ls-files khong chua chung.\nTC18: git log -1 --oneline va git status xac nhan commit/working tree.\nDay la checklist thu cong/CLI, khong co HTTP request va khong tao ket qua PASS gia. Xem postman/README.md.",
+      "item": []
+    },
+    {
+      "name": "06 – Environment & Security Configuration",
+      "description": "TC15: UserSecretsId co trong csproj; appsettings/launchSettings duoc theo doi khong chua secret that; user-secrets nam ngoai repository. Kiem tra bang .NET CLI/Git, khong suy ra tu HTTP response. Xem postman/README.md.",
+      "item": []
+    },
+    {
+      "name": "07 – Build & Documentation",
+      "description": "TC16: dotnet build thanh cong.\nTC17: README co prerequisites, clone, restore, build, run, test va cau hinh secrets.\nTC20: clone sach roi thuc hien README; restore/build/run va health thanh cong.\nChecklist thu cong/CLI, khong phai request Postman.",
+      "item": []
+    },
+    {
+      "name": "08 – Postman Collection Management",
+      "description": "TC19: co exports/VietnamDiscovery.postman_collection.json va environment JSON; import vao Postman, chay collection, luu/xuat lai duoc. Ban Postman Native Git co the dung YAML truc tiep va khong co nut Export JSON; ban JSON tuong thich da duoc cung cap san. Khong tinh viec co file JSON la bang chung tat ca API da PASS.",
+      "item": []
+    },
+    {
+      "name": "09 – Kiểm tra bổ sung",
+      "description": "TC21: 405. TC22: Swagger Development. TC23: diagnostic route tat mac dinh (skip neu enableErrorTests=true).",
+      "item": [
+        {
+          "name": "21 – Method Not Allowed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC21 - POST health tra 405 va Allow GET', () => {",
+                  "    pm.response.to.have.status(405);",
+                  "    pm.expect((pm.response.headers.get('Allow') || '').split(',').map(x => x.trim())).to.include('GET');",
+                  "});",
+                  "pm.test('TC21a - 405 dung ProblemDetails', () => {",
+                  "",
+                  "const p = pm.response.json();",
+                  "pm.expect(pm.response.headers.get('Content-Type').split(';')[0].trim().toLowerCase()).to.equal('application/problem+json');",
+                  "['type', 'title', 'instance', 'traceId'].forEach(key => pm.expect(p[key], key).to.be.a('string').and.not.empty);",
+                  "pm.expect(p.status).to.equal(pm.response.code);",
+                  "",
+                  "    pm.expect(p.instance).to.equal('/api/v1/health');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/health",
+            "description": "POST vao endpoint chi ho tro GET: 405 + Allow GET."
+          },
+          "response": []
+        },
+        {
+          "name": "22 – Swagger Development",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC22 - OpenAPI Development truy cap duoc va co health', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const p = pm.response.json();",
+                  "    pm.expect(p.openapi).to.match(/^3\\./);",
+                  "    pm.expect(p.paths).to.have.property('/api/v1/health');",
+                  "    pm.expect(p.paths).not.to.have.property('/_tests/validation');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/swagger/v1/swagger.json",
+            "description": "Chi chay bo collection nay trong Development. Production Swagger 404 da duoc integration test kiem tra."
+          },
+          "response": []
+        },
+        {
+          "name": "23 – Test Error Disabled By Default",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (String(pm.variables.get('enableErrorTests')).toLowerCase() === 'true') {",
+                  "    console.warn('SKIPPED TC23: diagnostic route dang duoc bat cho bo test exception.');",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('TC23 - Endpoint test-error tat mac dinh', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/test-error",
+            "description": "Chay khi server khong bat Diagnostics va enableErrorTests=false. Neu server da bat Diagnostics, case se FAIL de bao sai cau hinh."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

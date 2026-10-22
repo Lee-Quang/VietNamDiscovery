@@ -1,0 +1,8 @@
+$kind: "collection"
+name: "05 – Git & Source Code Management"
+description: |-
+  TC13: git status hoat dong trong thu muc solution.
+  TC14: git check-ignore xac nhan bin/, obj/, .env bi ignore; git ls-files khong chua chung.
+  TC18: git log -1 --oneline va git status xac nhan commit/working tree.
+  Day la checklist thu cong/CLI, khong co HTTP request va khong tao ket qua PASS gia. Xem postman/README.md.
+order: 5000

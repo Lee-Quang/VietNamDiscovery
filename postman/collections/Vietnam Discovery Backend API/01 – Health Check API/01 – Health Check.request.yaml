@@ -1,0 +1,19 @@
+$kind: "http-request"
+name: "01 – Health Check"
+description: "TC01-TC04: HTTP 200, JSON object, status=Healthy, application=Vietnam Discovery API."
+url: "{{baseUrl}}/api/v1/health"
+method: "GET"
+headers: [{"key": "Accept", "value": "application/json"}]
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      pm.collectionVariables.unset('vdb12LastErrorBaseUrl');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('TC01 - HTTP 200 OK', () => pm.response.to.have.status(200));
+      pm.test('TC02 - Response la JSON object hop le', () => pm.expect(pm.response.json()).to.be.an('object'));
+      pm.test('TC03 - Backend Healthy', () => pm.expect(pm.response.json().status).to.equal('Healthy'));
+      pm.test('TC04 - Ten ung dung', () => pm.expect(pm.response.json().application).to.equal('Vietnam Discovery API'));
+order: 1000

@@ -1,0 +1,4 @@
+$kind: "collection"
+name: "06 – Environment & Security Configuration"
+description: "TC15: UserSecretsId co trong csproj; appsettings/launchSettings duoc theo doi khong chua secret that; user-secrets nam ngoai repository. Kiem tra bang .NET CLI/Git, khong suy ra tu HTTP response. Xem postman/README.md."
+order: 6000

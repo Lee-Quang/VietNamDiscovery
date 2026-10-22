@@ -1,0 +1,8 @@
+$kind: "collection"
+name: "07 – Build & Documentation"
+description: |-
+  TC16: dotnet build thanh cong.
+  TC17: README co prerequisites, clone, restore, build, run, test va cau hinh secrets.
+  TC20: clone sach roi thuc hien README; restore/build/run va health thanh cong.
+  Checklist thu cong/CLI, khong phai request Postman.
+order: 7000

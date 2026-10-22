@@ -1,0 +1,3 @@
+name: "Vietnam Discovery - Local"
+values: [{"key": "baseUrl", "value": "http://localhost:5026"}, {"key": "maxResponseTimeMs", "value": "2000"}, {"key": "enableErrorTests", "value": "false"}]
+color: 0

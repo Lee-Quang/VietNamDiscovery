@@ -1,0 +1,21 @@
+$kind: "http-request"
+name: "02 – Not Found"
+description: "TC07: HTTP 404, application/problem+json, status=404, instance dung route va traceId khong rong."
+url: "{{baseUrl}}/api/v1/not-found"
+method: "GET"
+headers: [{"key": "Accept", "value": "text/html"}]
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('TC07 - Endpoint khong ton tai tra 404', () => pm.response.to.have.status(404));
+      pm.test('TC07a - ProblemDetails hop le va co traceId', () => {
+
+      const p = pm.response.json();
+      pm.expect(pm.response.headers.get('Content-Type').split(';')[0].trim().toLowerCase()).to.equal('application/problem+json');
+      ['type', 'title', 'instance', 'traceId'].forEach(key => pm.expect(p[key], key).to.be.a('string').and.not.empty);
+      pm.expect(p.status).to.equal(pm.response.code);
+
+          pm.expect(p.instance).to.equal('/api/v1/not-found');
+      });
+order: 1000

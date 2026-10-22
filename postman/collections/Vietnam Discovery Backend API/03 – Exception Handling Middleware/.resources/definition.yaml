@@ -1,0 +1,4 @@
+$kind: "collection"
+name: "03 – Exception Handling Middleware"
+description: "VDB-12 | TC08-TC10. Chi chay khi Development + Diagnostics:EnableTestEndpoints=true va enableErrorTests=true. Neu khong, request bi skip, khong duoc tinh la PASS."
+order: 3000

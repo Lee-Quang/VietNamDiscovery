@@ -1,0 +1,17 @@
+$kind: "http-request"
+name: "05- Kiểm tra Timestamp"
+description: "TC05: timestamp ISO 8601 hop le, co timezone. Khong so sanh chinh xac voi dong ho may client."
+url: "{{baseUrl}}/api/v1/health"
+method: "GET"
+headers: [{"key": "Accept", "value": "application/json"}]
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('TC05 - Timestamp ISO 8601 co mui gio va parse duoc', () => {
+          const timestamp = pm.response.json().timestamp;
+          pm.expect(timestamp).to.be.a('string');
+          pm.expect(timestamp).to.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/);
+          pm.expect(Number.isFinite(Date.parse(timestamp))).to.equal(true);
+      });
+order: 2000

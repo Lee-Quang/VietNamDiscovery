@@ -1,0 +1,24 @@
+$kind: "http-request"
+name: "21 – Method Not Allowed"
+description: "POST vao endpoint chi ho tro GET: 405 + Allow GET."
+url: "{{baseUrl}}/api/v1/health"
+method: "POST"
+headers: [{"key": "Accept", "value": "application/json"}]
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('TC21 - POST health tra 405 va Allow GET', () => {
+          pm.response.to.have.status(405);
+          pm.expect((pm.response.headers.get('Allow') || '').split(',').map(x => x.trim())).to.include('GET');
+      });
+      pm.test('TC21a - 405 dung ProblemDetails', () => {
+
+      const p = pm.response.json();
+      pm.expect(pm.response.headers.get('Content-Type').split(';')[0].trim().toLowerCase()).to.equal('application/problem+json');
+      ['type', 'title', 'instance', 'traceId'].forEach(key => pm.expect(p[key], key).to.be.a('string').and.not.empty);
+      pm.expect(p.status).to.equal(pm.response.code);
+
+          pm.expect(p.instance).to.equal('/api/v1/health');
+      });
+order: 1000

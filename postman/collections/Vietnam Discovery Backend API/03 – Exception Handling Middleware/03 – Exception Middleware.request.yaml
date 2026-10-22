@@ -1,0 +1,44 @@
+$kind: "http-request"
+name: "03 – Exception Middleware"
+description: "TC08-TC10. Endpoint se nem exception co marker POSTMAN_TEST_EXCEPTION; response khong duoc lo marker nay."
+url: "{{baseUrl}}/api/v1/test-error"
+method: "GET"
+headers: [{"key": "Accept", "value": "text/html"}]
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      pm.collectionVariables.unset('vdb12LastErrorBaseUrl');
+
+      if (String(pm.variables.get('enableErrorTests')).toLowerCase() !== 'true') {
+          console.warn('SKIPPED: bat Diagnostics:EnableTestEndpoints va enableErrorTests=true de chay TC08-TC11.');
+          pm.execution.skipRequest();
+      }
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      if (pm.response.code === 500) {
+          pm.collectionVariables.set('vdb12LastErrorBaseUrl', pm.variables.get('baseUrl'));
+      }
+      pm.test('TC08 - Exception tra HTTP 500', () => pm.response.to.have.status(500));
+      pm.test('TC09 - Response 500 dung ProblemDetails', () => {
+
+      const p = pm.response.json();
+      pm.expect(pm.response.headers.get('Content-Type').split(';')[0].trim().toLowerCase()).to.equal('application/problem+json');
+      ['type', 'title', 'instance', 'traceId'].forEach(key => pm.expect(p[key], key).to.be.a('string').and.not.empty);
+      pm.expect(p.status).to.equal(pm.response.code);
+
+          pm.expect(p.status).to.equal(500);
+          pm.expect(p.instance).to.equal('/api/v1/test-error');
+          pm.expect(p.detail).to.equal('An unexpected error occurred. Contact support with the traceId.');
+      });
+      pm.test('TC10 - Khong lo exception hoac stack trace', () => {
+          pm.response.to.have.status(500);
+          const text = pm.response.text();
+          const p = pm.response.json();
+          ['POSTMAN_TEST_EXCEPTION', 'InvalidOperationException', 'System.InvalidOperationException',
+           'VietnamDiscovery.Api', 'Program.cs', ':line '].forEach(value => pm.expect(text).not.to.include(value));
+          ['exception', 'stackTrace', 'stacktrace', 'innerException'].forEach(key => pm.expect(p).not.to.have.property(key));
+          pm.expect(text).not.to.match(/[A-Za-z]:\\/);
+      });
+order: 1000

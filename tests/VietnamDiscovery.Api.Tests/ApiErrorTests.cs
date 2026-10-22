@@ -121,6 +121,36 @@ public sealed class ApiErrorTests
         await AssertProblem(response, HttpStatusCode.NotFound, path);
     }
 
+    [Theory]
+    [InlineData("Development", false)]
+    [InlineData("Production", false)]
+    [InlineData("Production", true)]
+    public async Task Diagnostic_route_requires_development_and_explicit_opt_in(
+        string environment, bool enabled)
+    {
+        await using var factory = new ApiFactory(environment, enableTestEndpoints: enabled);
+        using var client = CreateClient(factory);
+        using var response = await client.GetAsync("/api/v1/test-error");
+        await AssertProblem(response, HttpStatusCode.NotFound, "/api/v1/test-error");
+    }
+
+    [Fact]
+    public async Task Diagnostic_exception_is_safe_and_server_recovers_on_same_host()
+    {
+        await using var factory = new ApiFactory(enableTestEndpoints: true);
+        using var client = CreateClient(factory);
+        using var error = await client.GetAsync("/api/v1/test-error");
+        await AssertProblem(error, HttpStatusCode.InternalServerError, "/api/v1/test-error");
+        var json = await error.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("POSTMAN_TEST_EXCEPTION", json);
+        Assert.DoesNotContain("InvalidOperationException", json);
+
+        using var health = await client.GetAsync("/api/v1/health");
+        Assert.Equal(HttpStatusCode.OK, health.StatusCode);
+        var body = await health.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("Healthy", body.GetProperty("status").GetString());
+    }
+
     private static async Task<JsonElement> AssertProblem(
         HttpResponseMessage response, HttpStatusCode status, string instance)
     {

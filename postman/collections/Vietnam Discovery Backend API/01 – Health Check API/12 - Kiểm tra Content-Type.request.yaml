@@ -1,0 +1,16 @@
+$kind: "http-request"
+name: "12 - Kiểm tra Content-Type"
+description: "TC12: chap nhan application/json; charset=utf-8."
+url: "{{baseUrl}}/api/v1/health"
+method: "GET"
+headers: [{"key": "Accept", "value": "application/json"}]
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('TC12 - Content-Type application/json, chap nhan charset', () => {
+          pm.response.to.have.status(200);
+          const contentType = pm.response.headers.get('Content-Type') || '';
+          pm.expect(contentType.split(';')[0].trim().toLowerCase()).to.equal('application/json');
+      });
+order: 4000

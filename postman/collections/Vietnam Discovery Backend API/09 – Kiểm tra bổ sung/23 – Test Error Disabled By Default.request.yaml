@@ -1,0 +1,19 @@
+$kind: "http-request"
+name: "23 – Test Error Disabled By Default"
+description: "Chay khi server khong bat Diagnostics va enableErrorTests=false. Neu server da bat Diagnostics, case se FAIL de bao sai cau hinh."
+url: "{{baseUrl}}/api/v1/test-error"
+method: "GET"
+headers: [{"key": "Accept", "value": "application/json"}]
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if (String(pm.variables.get('enableErrorTests')).toLowerCase() === 'true') {
+          console.warn('SKIPPED TC23: diagnostic route dang duoc bat cho bo test exception.');
+          pm.execution.skipRequest();
+      }
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('TC23 - Endpoint test-error tat mac dinh', () => pm.response.to.have.status(404));
+order: 3000

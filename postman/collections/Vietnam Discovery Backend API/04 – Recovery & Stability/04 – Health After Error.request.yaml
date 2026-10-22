@@ -1,0 +1,24 @@
+$kind: "http-request"
+name: "04 – Health After Error"
+description: "TC11: request exception truoc do phai nhan 500; health tiep theo phai 200 va Healthy. Chay bang Runner de giu dung thu tu."
+url: "{{baseUrl}}/api/v1/health"
+method: "GET"
+headers: [{"key": "Accept", "value": "application/json"}]
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if (String(pm.variables.get('enableErrorTests')).toLowerCase() !== 'true') {
+          console.warn('SKIPPED: bat Diagnostics:EnableTestEndpoints va enableErrorTests=true de chay TC08-TC11.');
+          pm.execution.skipRequest();
+      }
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('TC11 - Health 200 Healthy sau exception tren cung baseUrl', () => {
+          pm.expect(pm.collectionVariables.get('vdb12LastErrorBaseUrl'), 'phai chay TC08 va nhan 500 truoc').to.equal(pm.variables.get('baseUrl'));
+          pm.response.to.have.status(200);
+          pm.expect(pm.response.json().status).to.equal('Healthy');
+      });
+      pm.collectionVariables.unset('vdb12LastErrorBaseUrl');
+order: 1000

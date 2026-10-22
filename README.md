@@ -100,7 +100,7 @@ curl.exe -i -H "Accept: text/html" http://localhost:5026/api/v1/missing
 curl.exe -i -X POST http://localhost:5026/api/v1/health
 ```
 
-Lỗi validation 400 và exception 500 được kích hoạt trong integration tests; không thêm endpoint gây lỗi vào ứng dụng thật chỉ để thử nghiệm.
+Lỗi validation 400 được kích hoạt trong integration tests. Để chạy bộ Postman có case exception 500 và recovery, xem [hướng dẫn Postman](postman/README.md). Endpoint `/api/v1/test-error` mặc định tắt, chỉ được đăng ký trong Development khi truyền `--Diagnostics:EnableTestEndpoints=true`; không xuất hiện trong Production. Collection và environment JSON để import nằm trong `postman/exports/`, bên cạnh collection YAML cho Postman Native Git.
 
 ## 5. Quy trình Git và Jira
 

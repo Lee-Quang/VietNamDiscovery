@@ -1,0 +1,4 @@
+$kind: "collection"
+name: "Vietnam Discovery Backend API"
+description: "VDB-11/VDB-12 | 20 TC goc + TC21-TC23. Postman tu dong kiem tra HTTP; Git/secrets/build/README la checklist, khong co request gia. Xem postman/README.md. Default: Development HTTP :5026, diagnostic route tat. Bat server flag va enableErrorTests=true de chay TC08-TC11."
+variables: [{"key": "baseUrl", "value": "http://localhost:5026"}, {"key": "maxResponseTimeMs", "value": "2000"}, {"key": "enableErrorTests", "value": "false"}]

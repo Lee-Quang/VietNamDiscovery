@@ -1,0 +1,18 @@
+$kind: "http-request"
+name: "22 – Swagger Development"
+description: "Chi chay bo collection nay trong Development. Production Swagger 404 da duoc integration test kiem tra."
+url: "{{baseUrl}}/swagger/v1/swagger.json"
+method: "GET"
+headers: [{"key": "Accept", "value": "application/json"}]
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('TC22 - OpenAPI Development truy cap duoc va co health', () => {
+          pm.response.to.have.status(200);
+          const p = pm.response.json();
+          pm.expect(p.openapi).to.match(/^3\./);
+          pm.expect(p.paths).to.have.property('/api/v1/health');
+          pm.expect(p.paths).not.to.have.property('/_tests/validation');
+      });
+order: 2000

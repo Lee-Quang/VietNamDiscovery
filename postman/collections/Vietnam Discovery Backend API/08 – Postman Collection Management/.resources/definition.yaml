@@ -1,0 +1,4 @@
+$kind: "collection"
+name: "08 – Postman Collection Management"
+description: "TC19: co exports/VietnamDiscovery.postman_collection.json va environment JSON; import vao Postman, chay collection, luu/xuat lai duoc. Ban Postman Native Git co the dung YAML truc tiep va khong co nut Export JSON; ban JSON tuong thich da duoc cung cap san. Khong tinh viec co file JSON la bang chung tat ca API da PASS."
+order: 8000

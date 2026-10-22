@@ -40,6 +40,16 @@ app.UseHttpsRedirection();
 
 app.MapControllers();
 
+// Opt-in diagnostic route for local Postman runs. Never registered in Production.
+if (app.Environment.IsDevelopment() &&
+    app.Configuration.GetValue<bool>("Diagnostics:EnableTestEndpoints"))
+{
+    app.MapGet("/api/v1/test-error", IResult () =>
+        throw new InvalidOperationException("POSTMAN_TEST_EXCEPTION"))
+        .WithTags("Development diagnostics")
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
+}
+
 app.Run();
 
 // Allows the integration tests to host the real application pipeline.

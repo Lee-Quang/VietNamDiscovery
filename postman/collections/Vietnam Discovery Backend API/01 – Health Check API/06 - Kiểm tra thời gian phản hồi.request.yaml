@@ -1,0 +1,17 @@
+$kind: "http-request"
+name: "06 - Kiểm tra thời gian phản hồi"
+description: "TC06: mac dinh <2000ms, localhost sau khi server khoi dong. Day la smoke test, khong phai load test."
+url: "{{baseUrl}}/api/v1/health"
+method: "GET"
+headers: [{"key": "Accept", "value": "application/json"}]
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('TC06 - Health thanh cong va phan hoi duoi nguong ms', () => {
+          pm.response.to.have.status(200);
+          const limit = Number(pm.variables.get('maxResponseTimeMs'));
+          pm.expect(Number.isFinite(limit) && limit > 0, 'nguong hop le').to.equal(true);
+          pm.expect(pm.response.responseTime).to.be.below(limit);
+      });
+order: 3000
