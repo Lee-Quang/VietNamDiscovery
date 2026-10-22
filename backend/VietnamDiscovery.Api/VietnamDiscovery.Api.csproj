@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>VietnamDiscovery-Api-bc99e341-195b-4eba-a926-634f55d7ce84</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

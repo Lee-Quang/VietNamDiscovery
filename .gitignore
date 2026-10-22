@@ -5,5 +5,15 @@ obj/
 *.user
 *.suo
 .env
+.env.*
+!.env.example
+secrets.json
+appsettings.Local.json
+appsettings.*.Local.json
+*.pfx
+*.p12
+TestResults/
+coverage/
+*.log
 
 .git-backup/

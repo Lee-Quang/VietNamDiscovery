@@ -4,3 +4,23 @@ GET {{VietnamDiscovery.Api_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+GET {{VietnamDiscovery.Api_HostAddress}}/api/v1/health
+Accept: application/json
+
+### OpenAPI (Development only)
+
+GET {{VietnamDiscovery.Api_HostAddress}}/swagger/v1/swagger.json
+Accept: application/json
+
+### Expected: 404 application/problem+json
+
+GET {{VietnamDiscovery.Api_HostAddress}}/api/v1/missing
+Accept: text/html
+
+### Expected: 405 application/problem+json, Allow: GET
+
+POST {{VietnamDiscovery.Api_HostAddress}}/api/v1/health
+Accept: application/json
+
+###
